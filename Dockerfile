@@ -7,7 +7,7 @@ FROM python:3.8.1-slim-buster as builder
 WORKDIR /usr/src/app
 
 # install system deps
-RUN apt-get update && apt-get install -y --no-install-recommends gcc
+# RUN apt-get update && apt-get install -y --no-install-recommends gcc
 
 # linting
 RUN pip install --upgrade pip
@@ -33,8 +33,7 @@ RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
 # install deps
-RUN apt-get update && apt-get install -y --no-install-recommends netcat
-#RUN apt-get update && apt-get install -y --no-install-recommends netcat
+# RUN apt-get update && apt-get install -y --no-install-recommends netcat
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
@@ -43,6 +42,8 @@ RUN pip install --no-cache /wheels/*
 # copy entrypoint
 COPY entrypoint.sh $APP_HOME
 COPY . $APP_HOME
+
+# Run as app user
 RUN chown -R app:app $APP_HOME
 USER app
 
