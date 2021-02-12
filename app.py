@@ -5,7 +5,6 @@ import ctypes
 import random
 from flask import Flask, jsonify  # pylint: disable=import-error
 
-
 app = Flask(__name__, static_folder="static")
 
 

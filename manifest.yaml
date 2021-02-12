@@ -1,0 +1,70 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: flask-demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: flask-demo
+  name: deployment-flask-demo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: flask-demo
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: flask-demo
+    spec:
+      containers:
+      - image: flask-demo:v1.0
+        imagePullPolicy: IfNotPresent
+        name: flask-demo
+        ports:
+        - containerPort: 5000
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: flask-demo
+  name: service-flask-demo
+spec:
+  ports:
+    - port: 5000
+      targetPort: 5000
+      protocol: TCP
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: flask-demo
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: flask-demo
+  name: ingress-flask-demo
+  # annotations:
+  #   kubernetes.io/ingress.class: alb
+  #   alb.ingress.kubernetes.io/scheme: internet-facing
+  #   alb.ingress.kubernetes.io/target-type: ip
+spec:
+  rules:
+    - host: kubernetes.docker.internal
+      http:
+        paths:
+          - path: /*
+            pathType: Prefix
+            backend:
+              service:
+                name: service-flask-demo
+                port: 
+                  number: 5000
